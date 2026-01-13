@@ -2,18 +2,296 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>StudentOS</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #161a22;
+      --text: #e6e8ee;
+      --muted: #9aa1b2;
+      --accent: #4f7cff;
+      --border: #222733;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    nav {
+      width: 220px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    nav h1 {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    nav button {
+      background: none;
+      border: none;
+      color: var(--text);
+      text-align: left;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    nav button.active,
+    nav button:hover {
+      background: var(--border);
+    }
+
+    /* Main */
+    main {
+      flex: 1;
+      padding: 24px;
+      overflow: auto;
+    }
+
+    section {
+      display: none;
+      max-width: 900px;
+    }
+
+    section.active {
+      display: block;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    /* Home */
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: var(--panel);
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    /* Notes */
+    textarea {
+      width: 100%;
+      height: 60vh;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 15px;
+      resize: none;
+    }
+
+    /* Todos */
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      padding: 8px 0;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Calculator */
+    .calc {
+      max-width: 260px;
+      background: var(--panel);
+      padding: 16px;
+      border-radius: 12px;
+    }
+
+    .calc-display {
+      background: black;
+      color: #0f0;
+      padding: 10px;
+      margin-bottom: 8px;
+      font-family: monospace;
+    }
+
+    .calc-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .calc-buttons button {
+      padding: 10px;
+      background: var(--border);
+      color: var(--text);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>StudentOS Hub</h1>
   <nav>
-    <a href="college.html">College List</a>
-    <a href="fiveyear.html">5 Year Plan</a>
-    <a href="daily.html">Daily Hub</a>
+    <h1>StudentOS</h1>
+    <button onclick="show('home')" class="active">Home</button>
+    <button onclick="show('notes')">Notebooks</button>
+    <button onclick="show('todos')">To-Dos</button>
+    <button onclick="show('calc')">Calculator</button>
   </nav>
-  <script src="js/register-sw.js"></script>
+
+  <main>
+    <section id="home" class="active">
+      <h2>Today</h2>
+      <div class="home-grid">
+        <div class="card">📓 Notes</div>
+        <div class="card">✅ To-Dos</div>
+        <div class="card">🧮 Calculator</div>
+      </div>
+      <p class="muted">Everything you need. Nothing extra.</p>
+    </section>
+
+    <section id="notes">
+      <h2>Notebook</h2>
+      <textarea id="notesArea" placeholder="Start writing…"></textarea>
+    </section>
+
+    <section id="todos">
+      <h2>To-Do List</h2>
+      <input id="todoInput" placeholder="Add a task and press Enter" />
+      <ul id="todoList"></ul>
+    </section>
+
+    <section id="calc">
+      <h2>Calculator</h2>
+      <div class="calc">
+        <div id="calcDisplay" class="calc-display">0</div>
+        <div class="calc-buttons">
+          <button onclick="press('7')">7</button>
+          <button onclick="press('8')">8</button>
+          <button onclick="press('9')">9</button>
+          <button onclick="press('/')">÷</button>
+          <button onclick="press('4')">4</button>
+          <button onclick="press('5')">5</button>
+          <button onclick="press('6')">6</button>
+          <button onclick="press('*')">×</button>
+          <button onclick="press('1')">1</button>
+          <button onclick="press('2')">2</button>
+          <button onclick="press('3')">3</button>
+          <button onclick="press('-')">−</button>
+          <button onclick="press('0')">0</button>
+          <button onclick="press('.')">.</button>
+          <button onclick="calculate()">=</button>
+          <button onclick="press('+')">+</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function show(id) {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // Notes autosave
+    const notes = document.getElementById('notesArea');
+    notes.value = localStorage.getItem('notes') || '';
+    notes.addEventListener('input', () => {
+      localStorage.setItem('notes', notes.value);
+    });
+
+    // Todos
+    const todoInput = document.getElementById('todoInput');
+    const todoList = document.getElementById('todoList');
+    let todos = JSON.parse(localStorage.getItem('todos') || '[]');
+
+    function renderTodos() {
+      todoList.innerHTML = '';
+      todos.forEach((t, i) => {
+        const li = document.createElement('li');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = t.done;
+        cb.onchange = () => {
+          t.done = cb.checked;
+          saveTodos();
+        };
+        li.append(cb, document.createTextNode(t.text));
+        todoList.appendChild(li);
+      });
+    }
+
+    function saveTodos() {
+      localStorage.setItem('todos', JSON.stringify(todos));
+      renderTodos();
+    }
+
+    todoInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && todoInput.value.trim()) {
+        todos.push({ text: todoInput.value, done: false });
+        todoInput.value = '';
+        saveTodos();
+      }
+    });
+
+    renderTodos();
+
+    // Calculator
+    let calcState = localStorage.getItem('calc') || '';
+    const display = document.getElementById('calcDisplay');
+    display.textContent = calcState || '0';
+
+    function press(v) {
+      calcState += v;
+      display.textContent = calcState;
+      localStorage.setItem('calc', calcState);
+    }
+
+    function calculate() {
+      try {
+        calcState = eval(calcState).toString();
+      } catch {
+        calcState = 'Error';
+      }
+      display.textContent = calcState;
+      localStorage.setItem('calc', calcState);
+    }
+  </script>
 </body>
 </html>
